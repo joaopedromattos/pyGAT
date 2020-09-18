@@ -26,6 +26,27 @@ def new_load_data(path="./pyGAT/data/cora/", dataset='cora'):
         raise ValueError(
             "Dataset not supported. List of supported datsets: ['cora', 'citeseer', 'pubmed', 'ppi', 'reddit']")
 
+    if (dataset == "citeseer"):
+
+        missing_labels = np.where(np.sum(labels, axis=1) == 0)
+
+        # Deleting missing nodes' rows and columns
+
+        adj = np.delete(, missing_labels, 0)
+        adj = np.delete(adj, missing_labels, 1)
+
+        print(adj.shape)
+
+        # Deleting feature vectors of nodes with missing labels.
+        features = np.delete(features, missing_labels, 0)
+
+        train = np.delete(train, missing_labels, 0)
+        val = np.delete(val, missing_labels, 0)
+        test = np.delete(test, missing_labels, 0)
+
+        # Removing nodes without labels...
+        labels = np.delete(labels, missing_labels, 0)
+
     # Converting one-hot encoding into categorical
     # values with the indexes of each dataset partition
     idx_train, idx_val, idx_test = np.where(train)[0], np.where(val)[
@@ -33,6 +54,7 @@ def new_load_data(path="./pyGAT/data/cora/", dataset='cora'):
 
     # Normalizing our features and adjacency matrices
     # features = normalize_features(features)
+    # print(adj)
     adj = normalize_adj(adj + sp.eye(adj.shape[0]))
 
     adj = torch.FloatTensor(adj.todense())
@@ -41,6 +63,13 @@ def new_load_data(path="./pyGAT/data/cora/", dataset='cora'):
     idx_train = torch.LongTensor(idx_train)
     idx_val = torch.LongTensor(idx_val)
     idx_test = torch.LongTensor(idx_test)
+
+    print(f"Adjacency Matrix: \t {adj.shape}")
+    print(f"Features Matrix: \t {features.shape}")
+    print(f"Labels Matrix: \t {labels.shape}")
+    print(f"Train Matrix: \t {idx_train.shape}")
+    print(f"Validation Matrix: \t {idx_val.shape}")
+    print(f"Test Matrix: \t {idx_test.shape}")
 
     return adj, features, labels, idx_train, idx_val, idx_test
 
